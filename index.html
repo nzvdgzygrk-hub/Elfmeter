@@ -1,0 +1,314 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Elfmeterschießen</title>
+  <style>
+    :root {
+      --bg: #0b1220;
+      --card: #111c31;
+      --card2: #15233d;
+      --text: #f6f8fb;
+      --muted: #aebbd0;
+      --line: rgba(255,255,255,.12);
+      --green: #26d07c;
+      --gold: #ffd54a;
+      --silver: #d7dee9;
+      --bronze: #d9985f;
+      --danger: #ff5d5d;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+      background: radial-gradient(circle at top, #1f3764 0, var(--bg) 42%, #070b13 100%);
+      color: var(--text);
+      min-height: 100vh;
+      padding: env(safe-area-inset-top) 14px env(safe-area-inset-bottom);
+    }
+
+    .app {
+      max-width: 520px;
+      margin: 0 auto;
+      padding: 16px 0 28px;
+    }
+
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 5;
+      padding: 10px 0 14px;
+      backdrop-filter: blur(14px);
+      background: linear-gradient(to bottom, rgba(11,18,32,.95), rgba(11,18,32,.65));
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 28px;
+      letter-spacing: -0.5px;
+    }
+
+    .sub {
+      margin: 6px 0 0;
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.35;
+    }
+
+    .podium {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 10px;
+      margin: 16px 0;
+    }
+
+    .cup {
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,.06);
+      border-radius: 18px;
+      padding: 12px 10px;
+      min-height: 96px;
+    }
+
+    .cup strong {
+      display: block;
+      font-size: 24px;
+      margin-bottom: 8px;
+    }
+
+    .cup select {
+      width: 100%;
+      border: 0;
+      border-radius: 12px;
+      padding: 10px 8px;
+      background: var(--card2);
+      color: var(--text);
+      font-size: 15px;
+    }
+
+    .gold { box-shadow: 0 0 0 1px rgba(255,213,74,.35) inset; }
+    .silver { box-shadow: 0 0 0 1px rgba(215,222,233,.30) inset; }
+    .bronze { box-shadow: 0 0 0 1px rgba(217,152,95,.35) inset; }
+
+    .actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+
+    button {
+      border: 0;
+      border-radius: 14px;
+      padding: 13px 12px;
+      background: var(--card2);
+      color: var(--text);
+      font-weight: 700;
+      font-size: 15px;
+      touch-action: manipulation;
+    }
+
+    button:active { transform: scale(.98); }
+    .danger { background: rgba(255,93,93,.16); color: #ffd0d0; }
+
+    .list {
+      display: grid;
+      gap: 9px;
+    }
+
+    .player {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 13px;
+      border-radius: 18px;
+      background: rgba(17,28,49,.92);
+      border: 1px solid var(--line);
+      min-height: 58px;
+    }
+
+    .player.done {
+      background: rgba(38,208,124,.13);
+      border-color: rgba(38,208,124,.45);
+    }
+
+    .check {
+      width: 30px;
+      height: 30px;
+      border-radius: 10px;
+      border: 2px solid rgba(255,255,255,.35);
+      display: grid;
+      place-items: center;
+      flex: 0 0 auto;
+      font-size: 20px;
+      font-weight: 900;
+      color: transparent;
+    }
+
+    .player.done .check {
+      background: var(--green);
+      border-color: var(--green);
+      color: #06120b;
+    }
+
+    .name {
+      flex: 1;
+      font-size: 18px;
+      font-weight: 800;
+    }
+
+    .badge {
+      min-width: 38px;
+      text-align: center;
+      font-size: 22px;
+    }
+
+    .hint {
+      text-align: center;
+      color: var(--muted);
+      font-size: 13px;
+      margin-top: 14px;
+    }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <header>
+      <h1>Elfmeterschießen</h1>
+      <p class="sub">Haken setzen, wenn ein Spieler dran war. Die ersten drei Pokale auswählen. Alles wird automatisch lokal auf dem iPhone gespeichert.</p>
+    </header>
+
+    <section class="podium" aria-label="Pokalplätze">
+      <div class="cup gold">
+        <strong>🏆 1.</strong>
+        <select id="place1" aria-label="Erster Platz"></select>
+      </div>
+      <div class="cup silver">
+        <strong>🥈 2.</strong>
+        <select id="place2" aria-label="Zweiter Platz"></select>
+      </div>
+      <div class="cup bronze">
+        <strong>🥉 3.</strong>
+        <select id="place3" aria-label="Dritter Platz"></select>
+      </div>
+    </section>
+
+    <section class="actions">
+      <button id="markAll">Alle abhaken</button>
+      <button id="resetChecks" class="danger">Haken löschen</button>
+    </section>
+
+    <section id="list" class="list" aria-label="Spielerliste"></section>
+
+    <p class="hint">Speicherung: nur lokal auf diesem Gerät/Browser.</p>
+  </main>
+
+  <script>
+    const players = [
+      "Paul B", "Ahmet", "Aos", "David", "Efe", "Elias", "Jannik", "Jonas", "Julian",
+      "Kiril", "Malik", "Mario", "Noel", "Paul H", "Piotrek", "Semih", "Mika", "Benny"
+    ];
+
+    const key = "elfmeter_app_v1";
+    const list = document.getElementById("list");
+    const selects = [
+      document.getElementById("place1"),
+      document.getElementById("place2"),
+      document.getElementById("place3")
+    ];
+
+    let state = loadState();
+
+    function loadState() {
+      try {
+        const saved = JSON.parse(localStorage.getItem(key));
+        if (saved && typeof saved === "object") {
+          return {
+            checked: saved.checked || {},
+            places: saved.places || ["", "", ""]
+          };
+        }
+      } catch (e) {}
+      return { checked: {}, places: ["", "", ""] };
+    }
+
+    function saveState() {
+      localStorage.setItem(key, JSON.stringify(state));
+    }
+
+    function cupFor(name) {
+      if (state.places[0] === name) return "🏆";
+      if (state.places[1] === name) return "🥈";
+      if (state.places[2] === name) return "🥉";
+      return "";
+    }
+
+    function renderSelects() {
+      selects.forEach((select, index) => {
+        select.innerHTML = "";
+        const empty = document.createElement("option");
+        empty.value = "";
+        empty.textContent = "Auswählen";
+        select.appendChild(empty);
+
+        players.forEach(name => {
+          const option = document.createElement("option");
+          option.value = name;
+          option.textContent = name;
+          select.appendChild(option);
+        });
+
+        select.value = state.places[index] || "";
+        select.onchange = () => {
+          state.places[index] = select.value;
+          saveState();
+          render();
+        };
+      });
+    }
+
+    function renderList() {
+      list.innerHTML = "";
+      players.forEach(name => {
+        const row = document.createElement("button");
+        row.type = "button";
+        row.className = "player" + (state.checked[name] ? " done" : "");
+        row.innerHTML = `
+          <span class="check">✓</span>
+          <span class="name">${name}</span>
+          <span class="badge">${cupFor(name)}</span>
+        `;
+        row.onclick = () => {
+          state.checked[name] = !state.checked[name];
+          saveState();
+          renderList();
+        };
+        list.appendChild(row);
+      });
+    }
+
+    function render() {
+      renderSelects();
+      renderList();
+    }
+
+    document.getElementById("markAll").onclick = () => {
+      players.forEach(name => state.checked[name] = true);
+      saveState();
+      renderList();
+    };
+
+    document.getElementById("resetChecks").onclick = () => {
+      if (!confirm("Alle Haken wirklich löschen?")) return;
+      state.checked = {};
+      saveState();
+      renderList();
+    };
+
+    render();
+  </script>
+</body>
+</html>
